@@ -1,0 +1,189 @@
+{
+  "exam_sources": [
+    {
+      "name": "JLPT官网",
+      "url": "https://www.jlpt.jp",
+      "language": "japanese",
+      "tags": ["考级"],
+      "selector": {
+        "list": "#ct1 ul li",
+        "title": "dd a",
+        "link": "dd a@href",
+        "date": ".date"
+      }
+    },
+    {
+      "name": "TestDaF官网",
+      "url": "https://www.testdaf.de/de/",
+      "language": "german",
+      "tags": ["考级"],
+      "selector": {
+        "list": ".news-list-item",
+        "title": "h3 a",
+        "link": "h3 a@href",
+        "summary": "[itemprop='description']",
+        "date": "time"
+      }
+    },
+    {
+      "name": "DELF/DALF考试",
+      "url": "https://www.delfdalf.fr",
+      "language": "french",
+      "tags": ["考级"],
+      "selector": {
+        "list": ".news-item",
+        "title": "h3 a",
+        "link": "h3 a@href",
+        "date": ".date"
+      }
+    },
+    {
+      "name": "DELE考试",
+      "url": "https://examenes.cervantes.es/es/noticias",
+      "language": "spanish",
+      "tags": ["考级"],
+      "titleIncludes": "DELE",
+      "selector": {
+        "list": ".views-row",
+        "title": "h2 a",
+        "link": "h2 a@href",
+        "summary": ".field-name-field-entradilla"
+      }
+    },
+    {
+      "name": "IELTS官网",
+      "url": "https://ielts.org/news-and-insights?articleCategory=news",
+      "language": "english",
+      "tags": ["考级", "留学", "行业资讯", "学习方法"],
+      "selector": {
+        "list": ".article-card",
+        "title": ".article-card__title",
+        "link": "a@href",
+        "date": ".article-card__icon-wrapper-date"
+      }
+    },
+    {
+      "name": "TOPIK官网",
+      "url": "http://www.topik.go.kr",
+      "language": "korean",
+      "tags": ["考级"],
+      "selector": {
+        "list": ".board-list li",
+        "title": "a",
+        "link": "a@href",
+        "date": ".date"
+      }
+    }
+  ],
+  "news_sources": [
+    {
+      "name": "Duolingo Blog",
+      "url": "https://blog.duolingo.com",
+      "language": "multi",
+      "tags": ["行业资讯", "学习方法"],
+      "selector": {
+        "list": ".featured-card",
+        "title": "h3",
+        "link": ".feature-card--content a@href",
+        "date": "time"
+      }
+    },
+    {
+      "name": "沪江日语",
+      "url": "https://jp.hujiang.com/new/",
+      "language": "japanese",
+      "tags": ["日语", "考级", "行业资讯"],
+      "isChinese": true,
+      "selector": {
+        "list": "a",
+        "title": "",
+        "link": "@href",
+        "date": ""
+      },
+      "linkFilter": "/new/p"
+    },
+    {
+      "name": "沪江韩语",
+      "url": "https://kr.hujiang.com/new/",
+      "language": "korean",
+      "tags": ["韩语", "考级", "行业资讯"],
+      "isChinese": true,
+      "selector": {
+        "list": "a",
+        "title": "",
+        "link": "@href",
+        "date": ""
+      },
+      "linkFilter": "/new/p"
+    },
+    {
+      "name": "沪江法语",
+      "url": "https://fr.hujiang.com/new/",
+      "language": "french",
+      "tags": ["法语", "考级", "行业资讯"],
+      "isChinese": true,
+      "selector": {
+        "list": "a",
+        "title": "",
+        "link": "@href",
+        "date": ""
+      },
+      "linkFilter": "/new/p"
+    },
+    {
+      "name": "沪江德语",
+      "url": "https://de.hujiang.com/new/",
+      "language": "german",
+      "tags": ["德语", "考级", "行业资讯"],
+      "isChinese": true,
+      "selector": {
+        "list": "a",
+        "title": "",
+        "link": "@href",
+        "date": ""
+      },
+      "linkFilter": "/new/p"
+    },
+    {
+      "name": "中国教育考试网",
+      "url": "https://www.neea.edu.cn/html1/category/16093/615-1.htm",
+      "language": "chinese",
+      "tags": ["高考"],
+      "titleIncludes": "高考",
+      "selector": {
+        "list": "#JKDivs_0 > ul:not(.page) > li",
+        "title": "#ReportIDkicker a@title",
+        "link": "#ReportIDkicker a@href",
+        "date": "#ReportIDIssueTime"
+      }
+    },
+    {
+      "name": "网易留学",
+      "url": "https://edu.163.com/liuxue/",
+      "language": "chinese",
+      "tags": ["留学", "行业资讯"],
+      "isChinese": true,
+      "selector": {
+        "list": "a",
+        "title": "",
+        "link": "@href",
+        "date": ""
+      },
+      "linkFilter": "/dy/article/"
+    },
+    {
+      "name": "新东方留学",
+      "url": "https://liuxue.xdf.cn/news/",
+      "language": "chinese",
+      "tags": ["留学", "行业资讯"],
+      "isChinese": true,
+      "selector": {
+        "list": "a",
+        "title": "",
+        "link": "@href",
+        "date": ""
+      },
+      "linkFilter": "/news/"
+    }
+  ]
+}

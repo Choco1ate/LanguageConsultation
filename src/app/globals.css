@@ -1,0 +1,126 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f0f7ff;
+  --foreground: #1e293b;
+  --primary: #4f8ef7;
+  --primary-light: #e0edff;
+  --primary-dark: #2563eb;
+  --primary-hover: #3b7cf5;
+  --accent: #38bdf8;
+  --accent-light: #e0f2fe;
+  --muted: #f1f5f9;
+  --muted-hover: #e8eef5;
+  --border: #dce6f1;
+  --card: #ffffff;
+  --card-hover: #f8fbff;
+  --text-secondary: #64748b;
+  --text-tertiary: #94a3b8;
+  --hero-gradient-from: #eef4ff;
+  --hero-gradient-to: #f0f9ff;
+  --shadow-color: rgba(79, 142, 247, 0.06);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-light: var(--primary-light);
+  --color-primary-dark: var(--primary-dark);
+  --color-primary-hover: var(--primary-hover);
+  --color-accent: var(--accent);
+  --color-accent-light: var(--accent-light);
+  --color-muted: var(--muted);
+  --color-muted-hover: var(--muted-hover);
+  --color-border: var(--border);
+  --color-card: var(--card);
+  --color-card-hover: var(--card-hover);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-hero-gradient-from: var(--hero-gradient-from);
+  --color-hero-gradient-to: var(--hero-gradient-to);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.section-kicker {
+  color: var(--primary-dark);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 1.1rem;
+  padding: 1.4rem;
+  box-shadow: 0 12px 40px var(--shadow-color);
+}
+
+.panel-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.metric-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  box-shadow: 0 10px 32px var(--shadow-color);
+}
+
+.topic-card {
+  display: flex;
+  min-height: 8.5rem;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: white;
+  padding: 1rem;
+}
+
+.topic-card:hover {
+  border-color: color-mix(in srgb, var(--primary) 45%, var(--border));
+  background: var(--primary-light);
+}
+
+/* Smooth transitions globally */
+* {
+  transition-property: background-color, border-color;
+  transition-duration: 150ms;
+  transition-timing-function: ease;
+}
+
+/* Custom scrollbar - light theme */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--muted);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--primary-light);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* Selection color */
+::selection {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+}

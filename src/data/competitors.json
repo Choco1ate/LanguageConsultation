@@ -1,0 +1,120 @@
+[
+  {
+    "id": "hujiang",
+    "name": "沪江教育",
+    "language": "multi",
+    "type": "both",
+    "market": "cn",
+    "ranking": 1,
+    "appleAppId": "738227542",
+    "androidPackageId": "com.hujiang.hjclass",
+    "url": "https://class.hujiang.com",
+    "logo_url": "",
+    "description": "国内综合型互联网语言学习平台，覆盖日语、韩语、法语、德语、西班牙语、俄语等多语种课程与资讯。"
+  },
+  {
+    "id": "izaodao",
+    "name": "早道教育",
+    "language": "multi",
+    "type": "both",
+    "market": "cn",
+    "ranking": 2,
+    "appleAppId": "1041306741",
+    "androidPackageId": "com.izaodao.ms",
+    "url": "https://www.izaodao.com",
+    "logo_url": "",
+    "description": "以日语在线教育为核心，延伸韩语、法语、西班牙语和德语，覆盖直播课、考级与高考日语。"
+  },
+  {
+    "id": "koolearn-languages",
+    "name": "新东方在线小语种",
+    "language": "multi",
+    "type": "website",
+    "market": "cn",
+    "ranking": 3,
+    "url": "https://language.koolearn.com",
+    "logo_url": "",
+    "description": "新东方旗下小语种在线课程平台，覆盖日语、韩语、法语、德语和西班牙语考试与留学课程。"
+  },
+  {
+    "id": "olacio",
+    "name": "欧那教育",
+    "language": "multi",
+    "type": "both",
+    "market": "cn",
+    "ranking": 4,
+    "url": "https://www.olacio.com",
+    "logo_url": "",
+    "description": "在线小语种直播教学平台，重点覆盖法语、德语、西班牙语、俄语和葡萄牙语，并提供企业培训。"
+  },
+  {
+    "id": "yangtuo",
+    "name": "羊驼教育",
+    "language": "multi",
+    "type": "both",
+    "market": "cn",
+    "ranking": 5,
+    "appleAppId": "1472978706",
+    "androidPackageId": "com.beatpte.alpacaJapanese",
+    "url": "https://www.yangtuoedu.com",
+    "logo_url": "",
+    "description": "国内互联网语言教育品牌，拥有日语、韩语、PTE和雅思等业务线，并配套学习工具与督学服务。"
+  },
+  {
+    "id": "hellotalk",
+    "name": "HelloTalk",
+    "language": "multi",
+    "type": "both",
+    "market": "cn",
+    "ranking": 6,
+    "appleAppId": "557130558",
+    "androidPackageId": "com.hellotalk",
+    "url": "https://www.hellotalk.com/zh-hans",
+    "logo_url": "",
+    "description": "由国内团队打造的全球语言交换社区，提供多语种真人互动、直播、语音房及企业语言服务。"
+  },
+  {
+    "id": "youda",
+    "name": "友达日语",
+    "language": "japanese",
+    "type": "website",
+    "market": "cn",
+    "ranking": 7,
+    "url": "https://www.youda.com.cn",
+    "logo_url": "",
+    "description": "一对一在线日语教育平台，覆盖成人、青少儿、高考日语、JLPT、商务日语和企业培训。"
+  },
+  {
+    "id": "ribencun",
+    "name": "日本村外教网",
+    "language": "japanese",
+    "type": "both",
+    "market": "cn",
+    "ranking": 8,
+    "url": "https://www.ribencun.com",
+    "logo_url": "",
+    "description": "上海语德教育旗下在线日语平台，主打日本外教一对一、日语口语和商务日语课程。"
+  },
+  {
+    "id": "weimingtian",
+    "name": "未名天日语",
+    "language": "japanese",
+    "type": "website",
+    "market": "cn",
+    "ranking": 9,
+    "url": "https://www.riyu365.com",
+    "logo_url": "",
+    "description": "日语直播教育品牌，覆盖JLPT、高考日语、留学日语、一对一课程及日本升学服务。"
+  },
+  {
+    "id": "zhizhu",
+    "name": "知诸日语",
+    "language": "japanese",
+    "type": "website",
+    "market": "cn",
+    "ranking": 10,
+    "url": "https://www.zhizhuxueyuan.com",
+    "logo_url": "",
+    "description": "日语与日本升学垂直教育平台，覆盖入门、JLPT、EJU、大学院升学、口语及留学课程。"
+  }
+]
