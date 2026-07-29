@@ -2,74 +2,38 @@ import Link from 'next/link';
 
 export default function Footer() {
   return (
-    <footer className="bg-gradient-to-b from-background to-primary-light/20 border-t border-border mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Brand */}
+    <footer className="border-t-4 border-foreground bg-card mt-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="grid md:grid-cols-[1.4fr_1fr_1fr] gap-10">
           <div>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-sm">
-                <span className="text-white font-bold text-xs">语</span>
-              </div>
-              <span className="font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">小语种资讯站</span>
+            <div className="flex items-center gap-3">
+              <span className="w-9 h-9 bg-foreground text-background flex items-center justify-center font-serif text-xl border-b-4 border-primary">语</span>
+              <strong className="editorial-title text-xl">小语种资讯站</strong>
             </div>
-            <p className="text-sm text-text-secondary leading-relaxed">
-              专注小语种在线教育行业资讯，提供行业产品动态与精品文章聚合服务。
+            <p className="text-sm text-text-secondary leading-7 mt-4 max-w-md">
+              追踪小语种教育市场、学习平台与考试信息，为行业研究和关键决策提供可信来源。
             </p>
           </div>
-
-          {/* Quick Links */}
           <div>
-            <h3 className="font-semibold text-foreground mb-3">快速导航</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link href="/competitors" className="text-sm text-text-secondary hover:text-primary transition-colors">
-                  行业产品动态
-                </Link>
-              </li>
-              <li>
-                <Link href="/articles" className="text-sm text-text-secondary hover:text-primary transition-colors">
-                  精品文章
-                </Link>
-              </li>
-              <li>
-                <Link href="/calendar" className="text-sm text-text-secondary hover:text-primary transition-colors">
-                  考试日历
-                </Link>
-              </li>
-              <li>
-                <Link href="/compare" className="text-sm text-text-secondary hover:text-primary transition-colors">
-                  竞品对比
-                </Link>
-              </li>
-              <li>
-                <Link href="/insights" className="text-sm text-text-secondary hover:text-primary transition-colors">
-                  趋势看板
-                </Link>
-              </li>
-            </ul>
+            <p className="eyebrow mb-4">Research</p>
+            <div className="grid gap-2 text-sm">
+              <Link href="/competitors" className="hover:text-primary">产品动态</Link>
+              <Link href="/insights" className="hover:text-primary">趋势研究</Link>
+              <Link href="/compare" className="hover:text-primary">竞品对比</Link>
+            </div>
           </div>
-
-          {/* Languages */}
           <div>
-            <h3 className="font-semibold text-foreground mb-3">覆盖语种</h3>
-            <div className="flex flex-wrap gap-2">
-              {['日语', '韩语', '法语', '德语', '西班牙语', '英语'].map((lang) => (
-                <span
-                  key={lang}
-                  className="text-xs px-2 py-1 rounded-full bg-primary-light text-primary-dark"
-                >
-                  {lang}
-                </span>
-              ))}
+            <p className="eyebrow mb-4">Learning</p>
+            <div className="grid gap-2 text-sm">
+              <Link href="/articles" className="hover:text-primary">精品文章</Link>
+              <Link href="/calendar" className="hover:text-primary">考试日历</Link>
+              <span className="text-text-secondary">日语 · 韩语 · 法语 · 德语 · 西语</span>
             </div>
           </div>
         </div>
-
-        <div className="mt-8 pt-6 border-t border-border text-center">
-          <p className="text-xs text-text-secondary">
-            © {new Date().getFullYear()} 小语种资讯站 · 小语种在线教育行业监控与资讯聚合平台
-          </p>
+        <div className="mt-9 pt-4 border-t border-border flex flex-col sm:flex-row justify-between gap-2 text-[11px] text-text-tertiary">
+          <span>© {new Date().getFullYear()} 小语种资讯站</span>
+          <span>公开信息聚合 · 来源可追溯 · 每日更新</span>
         </div>
       </div>
     </footer>

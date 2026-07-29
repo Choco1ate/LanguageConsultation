@@ -25,41 +25,47 @@ function CompetitorsContent() {
   const [competitors, setCompetitors] = useState<Competitor[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedLanguage, setSelectedLanguage] = useState(() => searchParams.get('language') || 'all');
+  const [error, setError] = useState('');
 
   useEffect(() => {
+    setError('');
     const params = new URLSearchParams();
     if (selectedLanguage !== 'all') {
       params.set('language', selectedLanguage);
     }
 
     fetch(`/api/competitors?${params.toString()}`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
       .then((data) => {
-        setCompetitors(data);
+        setCompetitors(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch((err) => {
         console.error('Failed to fetch competitors:', err);
+        setError('产品动态暂时无法加载，请稍后重试。');
         setLoading(false);
       });
   }, [selectedLanguage]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="editorial-page">
       {/* Page Header */}
-      <div className="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+      <div className="page-rule py-8 mb-7 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5">
         <div>
-          <p className="section-kicker mb-2">China Top 10</p>
-          <h1 className="text-2xl font-bold text-foreground mb-2">国内小语种行业产品动态</h1>
+          <p className="eyebrow mb-3">China Market Intelligence / Top 10</p>
+          <h1 className="text-4xl md:text-6xl mb-3">行业产品动态</h1>
           <p className="text-text-secondary">
             聚焦国内 10 家代表性平台，持续观察课程、产品、价格、品牌与公司动态
           </p>
         </div>
-        <Link href="/compare" className="px-4 py-2.5 rounded-xl bg-primary text-white text-sm font-medium text-center">进入竞品对比</Link>
+        <Link href="/compare" className="px-5 py-3 bg-foreground text-background text-sm font-bold text-center hover:bg-primary">进入竞品对比 →</Link>
       </div>
 
       {/* Filters */}
-      <div className="mb-6">
+      <div className="panel mb-6">
         <CompetitorFilters
           selectedLanguage={selectedLanguage}
           onLanguageChange={setSelectedLanguage}
@@ -80,10 +86,14 @@ function CompetitorsContent() {
       </div>
 
       {/* Grid */}
-      {loading ? (
+      {error ? (
+        <div className="border border-primary bg-primary-light p-7">
+          <p className="font-bold text-primary-dark">数据连接中断</p><p className="text-sm text-text-secondary mt-1">{error}</p>
+        </div>
+      ) : loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="bg-card rounded-xl border border-border p-5 animate-pulse">
+            <div key={i} className="bg-card border border-border p-5 animate-pulse">
               <div className="h-5 bg-muted rounded w-3/4 mb-3" />
               <div className="h-3 bg-muted rounded w-1/2 mb-4" />
               <div className="h-3 bg-muted rounded w-full mb-2" />
@@ -92,14 +102,14 @@ function CompetitorsContent() {
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {competitors.map((c) => (
-            <CompetitorCard key={c.id} {...c} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-border border border-border">
+            {competitors.map((c) => (
+            <div key={c.id} className="bg-background"><CompetitorCard {...c} /></div>
           ))}
         </div>
       )}
 
-      {!loading && competitors.length === 0 && (
+      {!loading && !error && competitors.length === 0 && (
         <div className="text-center py-16 text-text-secondary">
           <p className="text-lg mb-2">暂无竞品数据</p>
           <p className="text-sm">请先运行数据初始化脚本</p>

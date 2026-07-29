@@ -16,10 +16,10 @@ export default function CompetitorFilters({
       <button
         onClick={() => onLanguageChange('all')}
         className={cn(
-          'px-3 py-1.5 rounded-full text-sm font-medium transition-colors',
+          'px-3 py-2 border text-xs font-bold',
           selectedLanguage === 'all'
             ? 'bg-primary text-white'
-            : 'bg-muted text-text-secondary hover:bg-primary-light hover:text-primary-dark'
+            : 'bg-card border-border text-text-secondary hover:bg-primary-light hover:text-primary-dark'
         )}
       >
         全部
@@ -29,10 +29,10 @@ export default function CompetitorFilters({
           key={opt.value}
           onClick={() => onLanguageChange(opt.value)}
           className={cn(
-            'px-3 py-1.5 rounded-full text-sm font-medium transition-colors',
+            'px-3 py-2 border text-xs font-bold',
             selectedLanguage === opt.value
               ? 'bg-primary text-white'
-              : 'bg-muted text-text-secondary hover:bg-primary-light hover:text-primary-dark'
+              : 'bg-card border-border text-text-secondary hover:bg-primary-light hover:text-primary-dark'
           )}
         >
           {opt.label}

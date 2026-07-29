@@ -26,19 +26,19 @@ export default function ArticleCard({
   const parsedTags: string[] = tags ? JSON.parse(tags) : [];
 
   return (
-    <Link href={`/articles/${id}`}>
-      <article className="bg-card rounded-xl border border-border p-5 hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 transition-all duration-200 cursor-pointer h-full flex flex-col">
+    <Link href={`/articles/${id}`} className="block h-full">
+      <article className="bg-card p-5 md:p-6 hover:bg-card-hover h-full flex flex-col group">
         {/* Tags */}
         <div className="flex flex-wrap gap-1.5 mb-3">
           {langLabel && (
-            <span className="text-xs px-2 py-0.5 rounded-full bg-primary-light text-primary-dark font-medium">
+            <span className="text-[10px] px-2 py-1 border border-primary/30 bg-primary-light text-primary-dark font-bold tracking-wide">
               {langLabel}
             </span>
           )}
           {parsedTags.map((tag) => (
             <span
               key={tag}
-              className="text-xs px-2 py-0.5 rounded-full bg-muted text-text-secondary"
+              className="text-[10px] px-2 py-1 border border-border bg-muted text-text-secondary"
             >
               {tag}
             </span>
@@ -46,7 +46,7 @@ export default function ArticleCard({
         </div>
 
         {/* Title */}
-        <h3 className="font-semibold text-foreground text-base leading-snug mb-2 line-clamp-2">
+        <h3 className="font-semibold text-foreground text-xl leading-snug mb-3 line-clamp-2 group-hover:text-primary">
           {title}
         </h3>
 
@@ -58,7 +58,7 @@ export default function ArticleCard({
         )}
 
         {/* Meta */}
-        <div className="flex items-center justify-between text-xs text-text-secondary pt-3 border-t border-border">
+        <div className="flex items-center justify-between text-[11px] text-text-secondary pt-4 border-t border-border">
           <div className="flex items-center gap-2">
             {source_name && (
               <span className="flex items-center gap-1">
