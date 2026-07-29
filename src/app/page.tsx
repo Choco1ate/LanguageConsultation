@@ -28,7 +28,7 @@ export default function HomePage() {
       <section className="grid lg:grid-cols-[1.55fr_.8fr] border-b border-foreground mt-7">
         <div className="lg:pr-10 lg:border-r border-border pb-8">
           <p className="eyebrow mb-5">Language Market Watch / Daily Brief</p>
-          <h1 className="text-[clamp(2.8rem,6.4vw,6.3rem)] leading-[.95] font-semibold max-w-5xl">
+          <h1 className="text-[clamp(2.35rem,4.8vw,4.85rem)] leading-[1.04] font-semibold max-w-4xl">
             看懂小语种行业<span className="text-primary">，</span><br />领先每一次变化。
           </h1>
           <p className="text-base md:text-lg text-text-secondary leading-8 mt-7 max-w-2xl">
