@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb, initDb } from '@/lib/db';
+import { attachEditorial, EDITORIAL_SELECT } from '@/lib/editorial';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,9 +18,17 @@ export async function GET(
       return NextResponse.json({ error: 'Competitor not found' }, { status: 404 });
     }
 
-    const updates = db.prepare(
-      'SELECT * FROM competitor_updates WHERE competitor_id = ? ORDER BY published_at DESC'
-    ).all(id);
+    const updates = (db.prepare(`
+      SELECT cu.*, ${EDITORIAL_SELECT}
+      FROM competitor_updates cu
+      LEFT JOIN content_enrichments ce ON ce.id = (
+        SELECT id FROM content_enrichments
+        WHERE entity_type='competitor_update' AND entity_id=cu.id AND status='published'
+        ORDER BY generated_at DESC LIMIT 1
+      )
+      WHERE cu.competitor_id = ?
+      ORDER BY datetime(COALESCE(cu.published_at,cu.created_at)) DESC
+    `).all(id) as Record<string, unknown>[]).map(attachEditorial);
 
     const productRows = db.prepare(`
       SELECT * FROM competitor_products

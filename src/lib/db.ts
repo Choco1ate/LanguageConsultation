@@ -152,6 +152,51 @@ export function initDb() {
       finished_at DATETIME NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS content_enrichments (
+      id TEXT PRIMARY KEY,
+      entity_type TEXT NOT NULL CHECK(entity_type IN ('article', 'competitor_update')),
+      entity_id TEXT NOT NULL,
+      content_hash TEXT NOT NULL,
+      editorial_summary TEXT NOT NULL,
+      why_it_matters TEXT NOT NULL,
+      audience TEXT,
+      key_points TEXT NOT NULL DEFAULT '[]',
+      category TEXT NOT NULL,
+      confidence REAL NOT NULL DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'review_needed',
+      source_urls TEXT NOT NULL DEFAULT '[]',
+      model TEXT NOT NULL,
+      prompt_version TEXT NOT NULL,
+      generated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(entity_type, entity_id, content_hash)
+    );
+
+    CREATE TABLE IF NOT EXISTS daily_briefs (
+      brief_date DATE PRIMARY KEY,
+      headline TEXT NOT NULL,
+      summary TEXT NOT NULL,
+      signals TEXT NOT NULL DEFAULT '[]',
+      source_ids TEXT NOT NULL DEFAULT '[]',
+      platform_count INTEGER DEFAULT 0,
+      source_count INTEGER DEFAULT 0,
+      model TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'published',
+      generated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS weekly_reports (
+      id TEXT PRIMARY KEY,
+      week_start DATE NOT NULL UNIQUE,
+      title TEXT NOT NULL,
+      thesis TEXT NOT NULL,
+      sections TEXT NOT NULL DEFAULT '[]',
+      watch_points TEXT NOT NULL DEFAULT '[]',
+      source_ids TEXT NOT NULL DEFAULT '[]',
+      model TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'published',
+      published_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
     CREATE INDEX IF NOT EXISTS idx_competitor_updates_competitor 
       ON competitor_updates(competitor_id);
     CREATE INDEX IF NOT EXISTS idx_competitor_products_competitor
@@ -168,6 +213,10 @@ export function initDb() {
       ON exam_events(exam_date);
     CREATE INDEX IF NOT EXISTS idx_scraper_runs_source
       ON scraper_runs(source_type, source_name, finished_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_content_enrichments_entity
+      ON content_enrichments(entity_type, entity_id, status, generated_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_content_enrichments_category
+      ON content_enrichments(category, status, generated_at DESC);
   `);
 
   // 迁移：为已有表添加新字段（如果不存在）
@@ -215,6 +264,29 @@ export function initDb() {
       ELSE '官方网站'
     END
     WHERE source_channel IS NULL
+  `);
+  database.exec(`
+    UPDATE competitor_updates SET category = CASE
+      WHEN title LIKE '%价格%' OR title LIKE '%会员%' OR title LIKE '%订阅%' THEN 'price_subscription'
+      WHEN title LIKE '%课程%' OR title LIKE '%词汇%' OR title LIKE '%语法%' THEN 'course_content'
+      WHEN title LIKE '%合作%' OR title LIKE '%渠道%' THEN 'partnership'
+      WHEN title LIKE '%融资%' OR title LIKE '%收购%' OR title LIKE '%公司%' THEN 'company_news'
+      WHEN title LIKE '%活动%' OR title LIKE '%品牌%' THEN 'marketing'
+      WHEN update_type IN ('app_update','android_update') THEN 'version_maintenance'
+      ELSE 'new_feature'
+    END
+  `);
+  database.exec(`
+    UPDATE articles SET category = CASE
+      WHEN title LIKE '%考试%' OR title LIKE '%报名%' OR title LIKE '%成绩%' OR title LIKE '%考点%'
+        OR title LIKE '%JLPT%' OR title LIKE '%TOPIK%' OR title LIKE '%DELE%' OR title LIKE '%IELTS%' THEN '政策与考试'
+      WHEN title LIKE '%产品%' OR title LIKE '%平台%' OR title LIKE '%课程%' OR title LIKE '%会员%' THEN '产品与课程'
+      WHEN title LIKE '%市场%' OR title LIKE '%公司%' OR title LIKE '%行业%' OR title LIKE '%合作%' THEN '市场与公司'
+      WHEN title LIKE '%留学%' OR title LIKE '%申请%' OR title LIKE '%签证%' THEN '留学趋势'
+      WHEN title LIKE '%学习%' OR title LIKE '%语法%' OR title LIKE '%词汇%' OR title LIKE '%听力%'
+        OR title LIKE '%口语%' OR title LIKE '%阅读%' OR title LIKE '%写作%' THEN '学习方法'
+      ELSE '文化热点'
+    END
   `);
   try {
     database.exec(`ALTER TABLE competitors ADD COLUMN market TEXT DEFAULT 'global'`);

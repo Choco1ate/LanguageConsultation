@@ -9,6 +9,14 @@ interface Update {
   source_url: string | null;
   published_at: string | null;
   source_channel?: string | null;
+  editorial?: {
+    summary: string;
+    whyItMatters: string;
+    keyPoints: string[];
+    category: string;
+    generatedAt: string;
+    aiAssisted: true;
+  } | null;
 }
 
 const updateTypeLabels: Record<string, { label: string; color: string }> = {
@@ -40,8 +48,9 @@ export default function UpdateTimeline({ updates }: { updates: Update[] }) {
             label: '其他',
             color: 'bg-gray-100 text-gray-700',
           };
+          const isMaintenance = !update.editorial && ['app_update', 'android_update'].includes(update.update_type || '');
 
-          return (
+          const timelineItem = (
             <div key={update.id} className="relative pl-8">
               {/* Timeline dot */}
               <div className={`absolute left-0 top-1.5 w-3.5 h-3.5 rounded-full border-2 ${
@@ -52,7 +61,7 @@ export default function UpdateTimeline({ updates }: { updates: Update[] }) {
               <div className="bg-card rounded-lg border border-border p-4 hover:border-primary/30 transition-colors">
                 <div className="flex items-center gap-2 mb-2">
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${typeInfo.color}`}>
-                    {typeInfo.label}
+                    {update.editorial?.category || typeInfo.label}
                   </span>
                   {update.published_at && (
                     <span className="text-xs text-text-secondary">
@@ -92,12 +101,30 @@ export default function UpdateTimeline({ updates }: { updates: Update[] }) {
                     update.title
                   )}
                 </h4>
-                {update.content && (
-                  <p className="text-sm text-text-secondary leading-relaxed">{update.content}</p>
+                {(update.editorial?.summary || update.content) && (
+                  <p className="text-sm text-text-secondary leading-relaxed">{update.editorial?.summary || update.content}</p>
+                )}
+                {update.editorial && (
+                  <div className="mt-3 bg-muted p-3">
+                    <p className="text-xs font-bold text-primary">为什么值得关注</p>
+                    <p className="text-sm mt-1 leading-6">{update.editorial.whyItMatters}</p>
+                    <ul className="mt-2 space-y-1 text-xs text-text-secondary">
+                      {update.editorial.keyPoints.map((point) => <li key={point}>· {point}</li>)}
+                    </ul>
+                    <p className="text-[9px] text-text-tertiary mt-2">AI 辅助整理 · 来源可追溯</p>
+                  </div>
                 )}
               </div>
             </div>
           );
+          return isMaintenance ? (
+            <details key={update.id} className="group">
+              <summary className="ml-8 cursor-pointer text-xs text-text-secondary hover:text-primary">
+                版本维护 · {update.title} {update.published_at ? `· ${formatDate(update.published_at)}` : ''}
+              </summary>
+              <div className="mt-3">{timelineItem}</div>
+            </details>
+          ) : timelineItem;
         })}
       </div>
     </div>

@@ -15,6 +15,13 @@ interface Article {
   tags: string | null;
   published_at: string | null;
   score: number | null;
+  editorial?: {
+    summary: string;
+    whyItMatters: string;
+    category: string;
+    generatedAt: string;
+    aiAssisted: true;
+  } | null;
 }
 
 function ArticlesContent() {
@@ -54,7 +61,7 @@ function ArticlesContent() {
   }, [selectedTag, selectedLanguage, sortBy, page]);
 
   useEffect(() => {
-    fetchArticles();
+    queueMicrotask(fetchArticles);
   }, [fetchArticles]);
 
   const handleTagChange = (tag: string) => {

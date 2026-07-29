@@ -10,6 +10,13 @@ interface ArticleCardProps {
   tags: string | null;
   published_at: string | null;
   score?: number | null;
+  editorial?: {
+    summary: string;
+    whyItMatters: string;
+    category: string;
+    generatedAt: string;
+    aiAssisted: true;
+  } | null;
 }
 
 export default function ArticleCard({
@@ -21,6 +28,7 @@ export default function ArticleCard({
   tags,
   published_at,
   score,
+  editorial,
 }: ArticleCardProps) {
   const langLabel = language ? (LANGUAGE_MAP[language] || language) : '';
   const parsedTags: string[] = tags ? JSON.parse(tags) : [];
@@ -30,6 +38,11 @@ export default function ArticleCard({
       <article className="bg-card p-5 md:p-6 hover:bg-card-hover h-full flex flex-col group">
         {/* Tags */}
         <div className="flex flex-wrap gap-1.5 mb-3">
+          {editorial && (
+            <span className="text-[10px] px-2 py-1 border border-accent bg-accent-light text-foreground font-bold">
+              {editorial.category}
+            </span>
+          )}
           {langLabel && (
             <span className="text-[10px] px-2 py-1 border border-primary/30 bg-primary-light text-primary-dark font-bold tracking-wide">
               {langLabel}
@@ -51,9 +64,15 @@ export default function ArticleCard({
         </h3>
 
         {/* Summary */}
-        {summary && (
+        {(editorial?.summary || summary) && (
           <p className="text-sm text-text-secondary leading-relaxed mb-3 flex-1 line-clamp-3">
-            {truncate(summary, 120)}
+            {truncate(editorial?.summary || summary || '', 140)}
+          </p>
+        )}
+
+        {editorial?.whyItMatters && (
+          <p className="text-xs leading-relaxed mb-4 border-l-2 border-primary pl-3 text-foreground line-clamp-2">
+            <b className="text-primary">值得关注：</b>{editorial.whyItMatters}
           </p>
         )}
 
@@ -82,6 +101,7 @@ export default function ArticleCard({
             <time>{formatDate(published_at)}</time>
           )}
         </div>
+        {editorial && <p className="text-[9px] text-text-tertiary mt-2">AI 辅助整理 · 来源可追溯</p>}
       </article>
     </Link>
   );

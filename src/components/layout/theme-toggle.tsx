@@ -15,7 +15,7 @@ export default function ThemeToggle() {
 
   useEffect(() => {
     const saved = (localStorage.getItem('site-theme') as Theme | null) || 'system';
-    setTheme(saved);
+    queueMicrotask(() => setTheme(saved));
     applyTheme(saved);
     const media = window.matchMedia('(prefers-color-scheme: dark)');
     const onChange = () => saved === 'system' && applyTheme('system');

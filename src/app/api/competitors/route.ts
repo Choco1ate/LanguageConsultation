@@ -12,9 +12,18 @@ export async function GET(request: NextRequest) {
 
     let query = `
       SELECT c.*, 
-        (SELECT cu.title FROM competitor_updates cu WHERE cu.competitor_id = c.id ORDER BY cu.published_at DESC LIMIT 1) as latest_update_title,
-        (SELECT cu.published_at FROM competitor_updates cu WHERE cu.competitor_id = c.id ORDER BY cu.published_at DESC LIMIT 1) as latest_update_date,
-        (SELECT COUNT(*) FROM competitor_updates cu WHERE cu.competitor_id = c.id) as update_count
+        (SELECT cu.title FROM competitor_updates cu WHERE cu.competitor_id = c.id ORDER BY datetime(COALESCE(cu.published_at, cu.created_at)) DESC LIMIT 1) as latest_update_title,
+        (SELECT COALESCE(cu.published_at, cu.created_at) FROM competitor_updates cu WHERE cu.competitor_id = c.id ORDER BY datetime(COALESCE(cu.published_at, cu.created_at)) DESC LIMIT 1) as latest_update_date,
+        (SELECT COUNT(*) FROM competitor_updates cu WHERE cu.competitor_id = c.id) as update_count,
+        (SELECT ce.editorial_summary FROM competitor_updates cu JOIN content_enrichments ce
+          ON ce.entity_type='competitor_update' AND ce.entity_id=cu.id AND ce.status='published'
+          WHERE cu.competitor_id=c.id ORDER BY datetime(COALESCE(cu.published_at,cu.created_at)) DESC LIMIT 1) AS latest_update_summary,
+        (SELECT ce.why_it_matters FROM competitor_updates cu JOIN content_enrichments ce
+          ON ce.entity_type='competitor_update' AND ce.entity_id=cu.id AND ce.status='published'
+          WHERE cu.competitor_id=c.id ORDER BY datetime(COALESCE(cu.published_at,cu.created_at)) DESC LIMIT 1) AS latest_update_impact,
+        (SELECT ce.category FROM competitor_updates cu JOIN content_enrichments ce
+          ON ce.entity_type='competitor_update' AND ce.entity_id=cu.id AND ce.status='published'
+          WHERE cu.competitor_id=c.id ORDER BY datetime(COALESCE(cu.published_at,cu.created_at)) DESC LIMIT 1) AS latest_update_category
       FROM competitors c
     `;
     
@@ -26,7 +35,7 @@ export async function GET(request: NextRequest) {
     }
 
     query += ` WHERE ${whereClauses.join(' AND ')}`;
-    query += ' ORDER BY c.ranking ASC';
+    query += ' ORDER BY datetime(latest_update_date) DESC, c.ranking ASC';
 
     const competitors = db.prepare(query).all(...params);
     return NextResponse.json(competitors);

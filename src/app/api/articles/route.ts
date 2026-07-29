@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb, initDb } from '@/lib/db';
+import { attachEditorial, EDITORIAL_SELECT } from '@/lib/editorial';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,14 +35,25 @@ export async function GET(request: NextRequest) {
     }
 
     const whereStr = whereClauses.length > 0 ? 'WHERE ' + whereClauses.join(' AND ') : '';
+    const listWhereStr = whereStr
+      .replace(/\blanguage\b/g, 'a.language')
+      .replace(/\btags\b/g, 'a.tags');
 
     const total = (db.prepare(`SELECT COUNT(*) as count FROM articles ${whereStr}`).get(...params) as { count: number }).count;
 
     const orderBy = sort === 'score' ? 'score DESC, published_at DESC' : 'published_at DESC';
 
-    const articles = db.prepare(
-      `SELECT * FROM articles ${whereStr} ORDER BY ${orderBy} LIMIT ? OFFSET ?`
-    ).all(...params, limit, offset);
+    const articles = (db.prepare(
+      `SELECT a.*, ${EDITORIAL_SELECT}
+       FROM articles a
+       LEFT JOIN content_enrichments ce ON ce.id = (
+         SELECT id FROM content_enrichments
+         WHERE entity_type='article' AND entity_id=a.id AND status='published'
+         ORDER BY generated_at DESC LIMIT 1
+       )
+       ${listWhereStr}
+       ORDER BY a.${orderBy.replaceAll(', ', ', a.')} LIMIT ? OFFSET ?`
+    ).all(...params, limit, offset) as Record<string, unknown>[]).map(attachEditorial);
 
     return NextResponse.json({
       articles,

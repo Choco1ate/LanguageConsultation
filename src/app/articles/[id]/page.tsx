@@ -16,6 +16,18 @@ interface Article {
   language: string | null;
   tags: string | null;
   published_at: string | null;
+  editorial?: {
+    summary: string;
+    whyItMatters: string;
+    audience: string;
+    keyPoints: string[];
+    category: string;
+    confidence: number;
+    sourceUrls: string[];
+    generatedAt: string;
+    model: string;
+    aiAssisted: true;
+  } | null;
 }
 
 export default function ArticleDetailPage() {
@@ -83,6 +95,11 @@ export default function ArticleDetailPage() {
       <article className="bg-card rounded-xl border border-border p-6 md:p-8 mb-8">
         {/* Tags */}
         <div className="flex flex-wrap gap-2 mb-4">
+          {article.editorial && (
+            <span className="text-xs px-2.5 py-1 bg-accent-light border border-accent font-bold">
+              {article.editorial.category}
+            </span>
+          )}
           {langLabel && (
             <span className="text-xs px-2.5 py-1 rounded-full bg-primary-light text-primary-dark font-medium">
               {langLabel}
@@ -137,9 +154,31 @@ export default function ArticleDetailPage() {
         </div>
 
         {/* Summary */}
-        {article.summary && (
+        {(article.editorial?.summary || article.summary) && (
           <div className="bg-primary-light/30 rounded-lg p-4 mb-6 border-l-4 border-primary/60">
-            <p className="text-foreground leading-relaxed">{article.summary}</p>
+            <p className="text-xs font-bold text-primary mb-2">编辑摘要</p>
+            <p className="text-foreground leading-relaxed">{article.editorial?.summary || article.summary}</p>
+          </div>
+        )}
+
+        {article.editorial && (
+          <div className="grid md:grid-cols-[1fr_.72fr] gap-6 mb-7">
+            <section>
+              <p className="eyebrow mb-3">Key Signals</p>
+              <h2 className="text-xl mb-3">关键信息</h2>
+              <ol className="space-y-3">
+                {article.editorial.keyPoints.map((point, index) => (
+                  <li key={point} className="flex gap-3 text-sm leading-6">
+                    <span className="text-primary font-bold">0{index + 1}</span><span>{point}</span>
+                  </li>
+                ))}
+              </ol>
+            </section>
+            <aside className="bg-muted p-5">
+              <p className="text-xs font-bold text-primary">为什么值得关注</p>
+              <p className="text-sm leading-6 mt-2">{article.editorial.whyItMatters}</p>
+              <p className="text-xs text-text-secondary mt-4">适合：{article.editorial.audience}</p>
+            </aside>
           </div>
         )}
 
@@ -147,6 +186,11 @@ export default function ArticleDetailPage() {
         {article.content && (
           <div className="prose prose-sm max-w-none text-foreground leading-relaxed">
             <p>{article.content}</p>
+          </div>
+        )}
+        {article.editorial && (
+          <div className="mt-7 pt-4 border-t border-border text-[11px] text-text-tertiary">
+            AI 辅助整理 · 结论仅基于所列来源 · 生成于 {formatDate(article.editorial.generatedAt)}
           </div>
         )}
       </article>

@@ -18,6 +18,9 @@ interface Competitor {
   latest_update_date: string | null;
   update_count: number;
   ranking: number | null;
+  latest_update_summary: string | null;
+  latest_update_impact: string | null;
+  latest_update_category: string | null;
 }
 
 function CompetitorsContent() {
@@ -28,26 +31,25 @@ function CompetitorsContent() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    setError('');
-    const params = new URLSearchParams();
-    if (selectedLanguage !== 'all') {
-      params.set('language', selectedLanguage);
-    }
-
-    fetch(`/api/competitors?${params.toString()}`)
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
-        setCompetitors(Array.isArray(data) ? data : []);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error('Failed to fetch competitors:', err);
-        setError('产品动态暂时无法加载，请稍后重试。');
-        setLoading(false);
-      });
+    queueMicrotask(() => {
+      setError('');
+      const params = new URLSearchParams();
+      if (selectedLanguage !== 'all') params.set('language', selectedLanguage);
+      fetch(`/api/competitors?${params.toString()}`)
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        })
+        .then((data) => {
+          setCompetitors(Array.isArray(data) ? data : []);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error('Failed to fetch competitors:', err);
+          setError('产品动态暂时无法加载，请稍后重试。');
+          setLoading(false);
+        });
+    });
   }, [selectedLanguage]);
 
   return (

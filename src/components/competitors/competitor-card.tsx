@@ -12,6 +12,9 @@ interface CompetitorCardProps {
   latest_update_date: string | null;
   update_count: number;
   ranking?: number | null;
+  latest_update_summary?: string | null;
+  latest_update_impact?: string | null;
+  latest_update_category?: string | null;
 }
 
 const typeLabels: Record<string, string> = {
@@ -31,6 +34,9 @@ export default function CompetitorCard({
   latest_update_date,
   update_count,
   ranking,
+  latest_update_summary,
+  latest_update_impact,
+  latest_update_category,
 }: CompetitorCardProps) {
   const langLabel = LANGUAGE_MAP[language] || language;
 
@@ -70,12 +76,14 @@ export default function CompetitorCard({
           <div className="pt-3 border-t border-border">
             <div className="flex items-center gap-1.5 text-xs text-text-secondary mb-1">
               <span className="text-primary">●</span>
-              <span>最新动态</span>
+              <span>{latest_update_category || '最新动态'}</span>
               {latest_update_date && (
                 <span className="ml-auto">{formatDate(latest_update_date)}</span>
               )}
             </div>
-            <p className="text-sm text-foreground line-clamp-2">{latest_update_title}</p>
+            <p className="text-sm text-foreground line-clamp-2">{latest_update_summary || latest_update_title}</p>
+            {latest_update_impact && <p className="text-xs text-text-secondary border-l-2 border-primary pl-2 mt-2 line-clamp-2">{latest_update_impact}</p>}
+            {latest_update_summary && <p className="text-[9px] text-text-tertiary mt-2">AI 辅助整理 · 来源可追溯</p>}
           </div>
         )}
 

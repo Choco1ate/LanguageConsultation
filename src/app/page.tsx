@@ -6,9 +6,12 @@ import { UPDATE_CATEGORIES } from '@/lib/content-intelligence';
 
 export const dynamic = 'force-dynamic';
 
-type Update = { id: string; competitor_id: string; competitor_name: string; title: string; category: keyof typeof UPDATE_CATEGORIES; published_at: string | null };
-type Article = { id: string; title: string; summary: string | null; source_name: string | null; language: string | null; tags: string | null; published_at: string | null; score: number | null };
+type Editorial = { summary: string; whyItMatters: string; category: string; generatedAt: string; aiAssisted: true };
+type Update = { id: string; competitor_id: string; competitor_name: string; title: string; category: keyof typeof UPDATE_CATEGORIES; published_at: string | null; editorial?: Editorial | null };
+type Article = { id: string; title: string; summary: string | null; source_name: string | null; language: string | null; tags: string | null; published_at: string | null; score: number | null; editorial?: Editorial | null };
 type Exam = { id: string; exam_type: string; title: string; language: string; exam_date: string | null; registration_end: string | null };
+type BriefSignal = { title: string; insight: string; entityId: string; entityType: 'article' | 'competitor_update' };
+type DailyBrief = { headline: string; summary: string; signals: BriefSignal[]; platform_count: number; source_count: number; generated_at: string };
 
 export default function HomePage() {
   const data = getDashboard('7d');
@@ -16,6 +19,7 @@ export default function HomePage() {
   const updates = data.recentUpdates as Update[];
   const articles = data.hotArticles as Article[];
   const lead = articles[0];
+  const brief = data.latestBrief as DailyBrief | null;
 
   return (
     <div className="editorial-page">
@@ -41,7 +45,19 @@ export default function HomePage() {
         </div>
         <aside className="lg:pl-8 py-8 lg:py-0">
           <p className="section-kicker">今日摘要</p>
-          <p className="editorial-title text-2xl leading-snug mt-5">{data.dailyBrief}</p>
+          {brief && <p className="eyebrow mt-5">{brief.headline}</p>}
+          <p className="editorial-title text-2xl leading-snug mt-3">{data.dailyBrief}</p>
+          {brief?.signals?.length ? (
+            <div className="mt-5 space-y-3">
+              {brief.signals.slice(0, 3).map((signal) => (
+                <Link key={signal.entityId} href={signal.entityType === 'article' ? `/articles/${signal.entityId}` : '/competitors'} className="block border-l-2 border-primary pl-3">
+                  <strong className="text-sm">{signal.title}</strong>
+                  <span className="block text-xs text-text-secondary mt-1">{signal.insight}</span>
+                </Link>
+              ))}
+              <p className="text-[9px] text-text-tertiary">AI 辅助整理 · {brief.source_count} 个来源 · 来源可追溯</p>
+            </div>
+          ) : null}
           <dl className="grid grid-cols-2 gap-x-6 gap-y-5 mt-8 pt-6 border-t border-border">
             {[
               ['新增文章', `${overview.todayArticles} 篇`],
@@ -66,7 +82,10 @@ export default function HomePage() {
               <Link key={item.id} href={`/competitors/${item.competitor_id}`} className="grid grid-cols-[2rem_1fr] sm:grid-cols-[2rem_7rem_1fr_auto] gap-3 py-5 items-start group">
                 <span className="text-xs text-text-tertiary pt-1">{String(index + 1).padStart(2, '0')}</span>
                 <strong className="text-sm text-primary-dark">{item.competitor_name}</strong>
-                <span className="font-semibold group-hover:text-primary">{item.title}</span>
+                <span>
+                  <b className="font-semibold group-hover:text-primary">{item.editorial?.summary || item.title}</b>
+                  {item.editorial?.whyItMatters && <small className="block text-text-secondary mt-1">{item.editorial.whyItMatters}</small>}
+                </span>
                 <span className="hidden sm:block text-xs text-text-tertiary">{item.published_at ? formatDate(item.published_at) : UPDATE_CATEGORIES[item.category]}</span>
               </Link>
             ))}
@@ -112,6 +131,16 @@ export default function HomePage() {
           </div>
         )}
       </section>
+
+      {data.weeklyReport && (
+        <section className="py-10 border-b border-border">
+          <Link href="/reports" className="grid lg:grid-cols-[.35fr_1fr_auto] gap-6 items-center bg-foreground text-background p-7 group">
+            <span className="eyebrow">Weekly Intelligence</span>
+            <span><strong className="editorial-title text-2xl block">{String(data.weeklyReport.title)}</strong><small className="opacity-70 mt-2 block">{String(data.weeklyReport.thesis)}</small></span>
+            <span className="text-primary font-bold">阅读本周观察 →</span>
+          </Link>
+        </section>
+      )}
 
       <section className="py-10 grid lg:grid-cols-[1.3fr_.7fr] gap-10">
         <div>

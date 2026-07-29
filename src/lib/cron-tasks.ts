@@ -5,7 +5,7 @@ import { scrapeAppStoreUpdates, type StoreUpdate } from './scraper/appstore-scra
 import { scrapeAndroidStoreUpdates } from './scraper/android-store-scraper';
 import sourcesData from '@/data/sources.json';
 import { v4 as uuidv4 } from 'uuid';
-import { calculateImportance, classifyUpdate } from './content-intelligence';
+import { calculateImportance, classifyArticle, classifyUpdate } from './content-intelligence';
 
 function recordRun(
   sourceType: 'article' | 'competitor' | 'app_store' | 'android_store',
@@ -64,7 +64,7 @@ export async function fetchArticles(): Promise<number> {
       let sourceNew = 0;
 
       for (const article of articles) {
-        const category = article.tags?.[0] || '其他';
+        const category = classifyArticle(article.title, article.tags || []);
         const importance = Math.max(1, Math.min(5, Math.round((article.score || 0) / 2) || 1));
         // 已抓取过的文章也要同步来源配置，避免旧语种或标签永久残留。
         const existing = checkExists.get(article.source_url) as { id: string } | undefined;

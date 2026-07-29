@@ -19,6 +19,7 @@ export default function Footer() {
             <div className="grid gap-2 text-sm">
               <Link href="/competitors" className="hover:text-primary">产品动态</Link>
               <Link href="/insights" className="hover:text-primary">趋势研究</Link>
+              <Link href="/reports" className="hover:text-primary">本周观察</Link>
               <Link href="/compare" className="hover:text-primary">竞品对比</Link>
             </div>
           </div>

@@ -1,34 +1,45 @@
 export const UPDATE_CATEGORIES = {
-  product_feature: '产品功能',
+  new_feature: '新功能',
+  price_subscription: '价格与订阅',
   course_content: '课程内容',
-  pricing: '价格促销',
-  app_release: 'App 版本',
-  marketing: '品牌市场',
+  partnership: '渠道合作',
+  marketing: '营销活动',
   company_news: '公司新闻',
-  other: '其他',
+  version_maintenance: '版本维护',
 } as const;
 
 const categoryRules: Array<[keyof typeof UPDATE_CATEGORIES, RegExp]> = [
-  ['app_release', /版本|更新日志|release|version|bug fix|app store|android|ios/i],
-  ['pricing', /价格|优惠|促销|折扣|会员|订阅|套餐|pricing|discount|sale/i],
+  ['price_subscription', /价格|优惠|促销|折扣|会员|订阅|套餐|pricing|discount|sale/i],
   ['course_content', /课程|语法|词汇|听力|口语|阅读|lesson|course|vocabulary|grammar/i],
-  ['product_feature', /功能|上线|新增|体验|工具|feature|launch|introduc|update/i],
+  ['partnership', /合作|渠道|联名|伙伴|partner|integration/i],
+  ['new_feature', /功能|上线|新增|体验|工具|feature|launch|introduc/i],
   ['company_news', /融资|收购|财报|高管|合作|公司|funding|acqui|revenue|partner/i],
   ['marketing', /品牌|活动|市场|广告|代言|campaign|brand|event/i],
+  ['version_maintenance', /版本|更新日志|release|version|bug fix|app store|android|ios|修复|优化/i],
 ];
 
 export function classifyUpdate(title: string, content = '', updateType = '') {
-  if (updateType === 'app_update' || updateType === 'android_update') return 'app_release';
   const text = `${title} ${content}`;
-  return categoryRules.find(([, rule]) => rule.test(text))?.[0] || 'other';
+  return categoryRules.find(([, rule]) => rule.test(text))?.[0]
+    || (updateType === 'app_update' || updateType === 'android_update' ? 'version_maintenance' : 'new_feature');
 }
 
 export function calculateImportance(title: string, content = '', category = 'other') {
   const text = `${title} ${content}`;
-  let score = category === 'company_news' || category === 'pricing' ? 3 : 2;
+  let score = category === 'company_news' || category === 'price_subscription' ? 3 : 2;
   if (/重大|全新|发布|上线|收购|融资|涨价|降价|全球|major|launch|acqui|funding/i.test(text)) score += 1;
   if (/修复|细节|小幅|bug fix|minor/i.test(text)) score -= 1;
   return Math.max(1, Math.min(5, score));
+}
+
+export function classifyArticle(title: string, tags: string[] = []) {
+  const text = `${title} ${tags.join(' ')}`;
+  if (/考试|报名|成绩|考点|JLPT|TOPIK|DELF|DALF|TestDaF|DELE|IELTS/i.test(text)) return '政策与考试';
+  if (/产品|平台|课程|功能|App|应用|会员|订阅/i.test(text)) return '产品与课程';
+  if (/市场|公司|行业|融资|合作|品牌|政策/i.test(text)) return '市场与公司';
+  if (/留学|申请|院校|签证/i.test(text)) return '留学趋势';
+  if (/学习|语法|词汇|听力|口语|阅读|写作|备考/i.test(text)) return '学习方法';
+  return '文化热点';
 }
 
 export const KEYWORD_DICTIONARY = [

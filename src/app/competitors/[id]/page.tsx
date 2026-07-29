@@ -25,6 +25,14 @@ interface Update {
   source_url: string | null;
   published_at: string | null;
   source_channel?: string | null;
+  editorial?: {
+    summary: string;
+    whyItMatters: string;
+    keyPoints: string[];
+    category: string;
+    generatedAt: string;
+    aiAssisted: true;
+  } | null;
 }
 
 export default function CompetitorDetailPage() {
