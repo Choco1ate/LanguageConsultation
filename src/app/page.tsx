@@ -40,7 +40,7 @@ export default function HomePage() {
           </p>
           <div className="flex flex-wrap gap-3 mt-8">
             <Link href="/competitors" className="bg-foreground text-background px-5 py-3 text-sm font-bold hover:bg-primary">进入产品情报库</Link>
-            <Link href="/insights" className="border border-foreground px-5 py-3 text-sm font-bold hover:bg-muted">阅读趋势报告</Link>
+            <Link href="/insights" className="border border-foreground px-5 py-3 text-sm font-bold hover:bg-muted">查看行业趋势</Link>
           </div>
         </div>
         <aside className="lg:pl-8 py-8 lg:py-0">

@@ -1,6 +1,6 @@
 import cron from 'node-cron';
 import { fetchArticles, fetchCompetitorUpdates } from './cron-tasks';
-import { enrichContent, generateDailyBrief, generateWeeklyReport } from './editorial';
+import { enrichContent, generateDailyBrief, generateTrendDigest, generateWeeklyReport } from './editorial';
 
 export function startCronJobs() {
   // 每天早上 6:00 执行抓取任务
@@ -23,6 +23,8 @@ export function startCronJobs() {
       } else {
         console.log('[Cron] 未配置 OPENAI_API_KEY，跳过内容增强');
       }
+      await Promise.all([generateTrendDigest('7d'), generateTrendDigest('30d')]);
+      console.log('[Cron] 7 日与 30 日行业趋势已更新');
 
       console.log(`[Cron] 每日抓取任务全部完成`);
     } catch (error) {
@@ -33,7 +35,6 @@ export function startCronJobs() {
   });
 
   cron.schedule('0 7 * * 1', async () => {
-    if (!process.env.OPENAI_API_KEY) return;
     try {
       await generateWeeklyReport();
       console.log('[Cron] 每周行业观察已更新');

@@ -10,7 +10,7 @@ const navItems = [
   { href: '/', label: '今日情报' },
   { href: '/competitors', label: '产品动态' },
   { href: '/articles', label: '精品文章' },
-  { href: '/insights', label: '趋势研究' },
+  { href: '/insights', label: '行业趋势' },
   { href: '/reports', label: '本周观察' },
   { href: '/compare', label: '竞品对比' },
   { href: '/calendar', label: '考试日历' },

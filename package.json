@@ -10,7 +10,10 @@
     "capture:products": "node scripts/capture-product-media.mjs",
     "content:backfill": "node scripts/enrich-content.mjs --backfill --limit=60",
     "content:daily": "node scripts/enrich-content.mjs --limit=30",
-    "test:editorial": "node scripts/verify-editorial.mjs"
+    "test:editorial": "node scripts/verify-editorial.mjs",
+    "test:trends": "node scripts/verify-trends.mjs",
+    "test:weekly": "node scripts/verify-weekly-report.mjs",
+    "test:compare": "node scripts/verify-competitor-compare.mjs"
   },
   "dependencies": {
     "better-sqlite3": "^12.11.1",

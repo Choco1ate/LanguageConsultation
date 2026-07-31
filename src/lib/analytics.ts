@@ -2,6 +2,7 @@ import { getDb, initDb } from './db';
 import { extractKeywords, UPDATE_CATEGORIES } from './content-intelligence';
 import { LANGUAGE_MAP, TAG_OPTIONS } from './utils';
 import { attachEditorial, EDITORIAL_SELECT, getLatestBrief, getLatestWeeklyReport } from './editorial';
+import { buildTrendAnalysis, getLatestTrendDigest, normalizeTrendLanguage } from './trend-analysis';
 
 export type AnalyticsRange = '7d' | '30d';
 
@@ -13,12 +14,14 @@ export function getInsights(range: AnalyticsRange, language?: string | null) {
   initDb();
   const db = getDb();
   const days = range === '30d' ? 30 : 7;
-  const languageClause = language && language !== 'all' ? ' AND language = ?' : '';
-  const params = language && language !== 'all' ? [days - 1, language] : [days - 1];
+  const normalizedLanguage = normalizeTrendLanguage(language);
+  const languageClause = normalizedLanguage !== 'all' ? ' AND language = ?' : '';
+  const params = normalizedLanguage !== 'all' ? [days - 1, normalizedLanguage] : [days - 1];
   const articleRows = db.prepare(`
     SELECT title, summary, source_name, language, published_at
     FROM articles
     WHERE datetime(COALESCE(published_at, created_at)) >= datetime('now', '-' || ? || ' days')
+      AND COALESCE(language, '') != 'chinese'
     ${languageClause}
   `).all(...params) as Array<{
     title: string; summary: string | null; source_name: string | null;
@@ -29,6 +32,7 @@ export function getInsights(range: AnalyticsRange, language?: string | null) {
     SELECT date(COALESCE(published_at, created_at)) AS date, COUNT(*) AS count
     FROM articles
     WHERE datetime(COALESCE(published_at, created_at)) >= datetime('now', '-' || ? || ' days')
+      AND COALESCE(language, '') != 'chinese'
     ${languageClause}
     GROUP BY date(COALESCE(published_at, created_at))
   `).all(...params) as Array<{ date: string; count: number }>;
@@ -54,14 +58,17 @@ export function getInsights(range: AnalyticsRange, language?: string | null) {
     SELECT language, COUNT(*) AS count
     FROM articles
     WHERE datetime(COALESCE(published_at, created_at)) >= datetime('now', '-' || ? || ' days')
+      AND COALESCE(language, '') != 'chinese'
     GROUP BY language ORDER BY count DESC
   `).all(days - 1) as Array<{ language: string; count: number }>;
 
   const editorialCategories = db.prepare(`
-    SELECT category, COUNT(*) AS count
-    FROM content_enrichments
-    WHERE status='published' AND datetime(generated_at) >= datetime('now', '-' || ? || ' days')
-    GROUP BY category ORDER BY count DESC
+    SELECT ce.category, COUNT(*) AS count
+    FROM content_enrichments ce
+    LEFT JOIN articles a ON ce.entity_type = 'article' AND a.id = ce.entity_id
+    WHERE ce.status='published' AND datetime(ce.generated_at) >= datetime('now', '-' || ? || ' days')
+      AND (ce.entity_type != 'article' OR COALESCE(a.language, '') != 'chinese')
+    GROUP BY ce.category ORDER BY count DESC
   `).all(days - 1) as Array<{ category: string; count: number }>;
   const sourceFreshness = db.prepare(`
     SELECT COUNT(DISTINCT source_name) AS source_count,
@@ -80,6 +87,10 @@ export function getInsights(range: AnalyticsRange, language?: string | null) {
     GROUP BY c.id ORDER BY update_count DESC, latest_update DESC LIMIT 8
   `).all(days - 1);
 
+  const trend = buildTrendAnalysis(range, normalizedLanguage);
+  const digest = getLatestTrendDigest(range, normalizedLanguage);
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Shanghai' }).format(new Date());
+  const currentDigest = digest && String(digest.digest_date) === today ? digest : null;
   return {
     range,
     methodology: '仅统计本站已抓取内容；关键词分数综合出现次数、来源数量与时间衰减。',
@@ -102,6 +113,18 @@ export function getInsights(range: AnalyticsRange, language?: string | null) {
     sourceFreshness,
     platformSignals,
     keywords: extractKeywords(articleRows),
+    period: trend.period,
+    summary: currentDigest ? {
+      headline: String(currentDigest.headline),
+      text: String(currentDigest.summary),
+      generationMethod: currentDigest.generation_method === 'ai' ? 'ai' : 'rules',
+      generatedAt: String(currentDigest.generated_at),
+      sufficientEvidence: trend.summary.sufficientEvidence,
+    } : trend.summary,
+    findings: currentDigest ? currentDigest.findings : trend.findings,
+    signals: trend.signals,
+    evidence: trend.evidence,
+    coverage: trend.coverage,
   };
 }
 
@@ -110,7 +133,7 @@ export function getDashboard(range: AnalyticsRange) {
   const db = getDb();
   const days = range === '30d' ? 30 : 7;
   const todayArticles = (db.prepare(
-    "SELECT COUNT(*) AS count FROM articles WHERE date(created_at, 'localtime') = date('now', 'localtime')"
+    "SELECT COUNT(*) AS count FROM articles WHERE date(created_at, 'localtime') = date('now', 'localtime') AND COALESCE(language, '') != 'chinese'"
   ).get() as { count: number }).count;
   const todayUpdates = (db.prepare(`
     SELECT COUNT(*) AS count FROM competitor_updates cu
@@ -119,7 +142,7 @@ export function getDashboard(range: AnalyticsRange) {
       AND c.market = 'cn' AND c.ranking BETWEEN 1 AND 10
   `
   ).get() as { count: number }).count;
-  const totalArticles = (db.prepare('SELECT COUNT(*) AS count FROM articles').get() as { count: number }).count;
+  const totalArticles = (db.prepare("SELECT COUNT(*) AS count FROM articles WHERE COALESCE(language, '') != 'chinese'").get() as { count: number }).count;
   const totalCompetitors = (db.prepare(
     "SELECT COUNT(*) AS count FROM competitors WHERE market = 'cn' AND ranking BETWEEN 1 AND 10"
   ).get() as { count: number }).count;
@@ -145,7 +168,7 @@ export function getDashboard(range: AnalyticsRange) {
       ORDER BY generated_at DESC LIMIT 1
     )
     WHERE c.market = 'cn' AND c.ranking BETWEEN 1 AND 10
-    ORDER BY cu.importance DESC, datetime(COALESCE(cu.published_at, cu.created_at)) DESC LIMIT 6
+    ORDER BY datetime(COALESCE(cu.published_at, cu.created_at)) DESC, cu.importance DESC LIMIT 6
   `).all() as Record<string, unknown>[]).map(attachEditorial);
   const topCompetitors = db.prepare(`
     SELECT id, name, description, language, type, ranking, url
@@ -159,6 +182,7 @@ export function getDashboard(range: AnalyticsRange) {
       SELECT id FROM content_enrichments WHERE entity_type='article' AND entity_id=a.id AND status='published'
       ORDER BY generated_at DESC LIMIT 1
     )
+    WHERE COALESCE(a.language, '') != 'chinese'
     ORDER BY a.score DESC, datetime(COALESCE(a.published_at, a.created_at)) DESC LIMIT 6
   `).all() as Record<string, unknown>[]).map(attachEditorial);
   const upcomingExams = db.prepare(`
@@ -177,7 +201,7 @@ export function getDashboard(range: AnalyticsRange) {
   `).all();
   const topics = TAG_OPTIONS.map((topic) => ({
     ...topic,
-    count: (db.prepare('SELECT COUNT(*) AS count FROM articles WHERE tags LIKE ?')
+    count: (db.prepare("SELECT COUNT(*) AS count FROM articles WHERE COALESCE(language, '') != 'chinese' AND tags LIKE ?")
       .get(`%${topic.value}%`) as { count: number }).count,
   }));
   const insights = getInsights(range);

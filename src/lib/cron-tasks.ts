@@ -194,11 +194,60 @@ export async function fetchCompetitorUpdates(): Promise<number> {
   for (const config of competitorConfigs) {
     const startedAt = new Date().toISOString();
     try {
-      const updates = await scrapeCompetitor(config);
+      const scraped = await scrapeCompetitor(config);
+      const previousSnapshot = db.prepare(`
+        SELECT id, content_hash, normalized_data FROM source_snapshots
+        WHERE competitor_id=? AND source_url=? AND status='success'
+        ORDER BY captured_at DESC LIMIT 1
+      `).get(config.id, scraped.snapshot.source_url) as {
+        id: string; content_hash: string; normalized_data: string;
+      } | undefined;
+      const snapshotId = uuidv4();
+      db.prepare(`
+        INSERT OR IGNORE INTO source_snapshots (
+          id, competitor_id, source_type, source_name, source_url,
+          content_hash, normalized_data, status, captured_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, 'success', CURRENT_TIMESTAMP)
+      `).run(
+        snapshotId,
+        scraped.snapshot.competitor_id,
+        scraped.snapshot.source_type,
+        scraped.snapshot.source_name,
+        scraped.snapshot.source_url,
+        scraped.snapshot.content_hash,
+        JSON.stringify(scraped.snapshot.normalized_data),
+      );
+
+      const updates = [...scraped.updates] as Array<StoreUpdate & { source_snapshot_id?: string }>;
+      if (previousSnapshot && previousSnapshot.content_hash !== scraped.snapshot.content_hash) {
+        const previousData = JSON.parse(previousSnapshot.normalized_data || '{}') as {
+          priceSignals?: string[]; courseSignals?: string[];
+        };
+        const priceChanged = JSON.stringify(previousData.priceSignals || [])
+          !== JSON.stringify(scraped.snapshot.normalized_data.priceSignals);
+        const courseChanged = JSON.stringify(previousData.courseSignals || [])
+          !== JSON.stringify(scraped.snapshot.normalized_data.courseSignals);
+        const label = priceChanged ? '价格与订阅' : courseChanged ? '课程目录' : '产品页面';
+        updates.unshift({
+          competitor_id: config.id,
+          product_name: config.productName,
+          title: `${config.productName} · ${label}发生变化`,
+          content: `官方${label}页面公开信息发生变化。本站已保留前后快照，请以原始页面为准。`,
+          update_type: 'official_snapshot',
+          source_channel: '官方网站',
+          source_url: `${config.url}#snapshot=${scraped.snapshot.content_hash.slice(0, 12)}`,
+          published_at: new Date().toISOString().slice(0, 10),
+          source_snapshot_id: snapshotId,
+        });
+      }
       let sourceNew = 0;
 
       for (const update of updates) {
-        const category = classifyUpdate(update.title, update.content, update.update_type);
+        const category = update.update_type === 'official_snapshot'
+          ? update.title.includes('价格') ? 'price_subscription'
+            : update.title.includes('课程') ? 'course_content'
+              : 'new_feature'
+          : classifyUpdate(update.title, update.content, update.update_type);
         const importance = calculateImportance(update.title, update.content, category);
         const productId = resolveProductId(update.competitor_id, update.product_name);
         const existing = checkExists.get(update.source_url, update.competitor_id) as { id: string } | undefined;
@@ -216,6 +265,10 @@ export async function fetchCompetitorUpdates(): Promise<number> {
           category, importance,
           update.source_channel, update.source_url, update.published_at
         );
+        if (update.source_snapshot_id) {
+          db.prepare('UPDATE competitor_updates SET source_snapshot_id=? WHERE id=?')
+            .run(update.source_snapshot_id, id);
+        }
         totalNew++;
         sourceNew++;
       }

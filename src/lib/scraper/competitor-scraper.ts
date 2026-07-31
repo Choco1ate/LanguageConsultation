@@ -1,5 +1,6 @@
 import * as cheerio from 'cheerio';
 import { Agent } from 'node:https';
+import { createHash } from 'node:crypto';
 
 const insecureAgent = new Agent({ rejectUnauthorized: false });
 
@@ -20,6 +21,7 @@ export interface ScraperConfig {
   url: string;
   changelogPath?: string;
   blogPath?: string;
+  sourceType: 'official_news' | 'course_catalog' | 'product_page';
   selectors: {
     list: string;
     title: string;
@@ -29,22 +31,38 @@ export interface ScraperConfig {
   };
 }
 
+export interface SourceSnapshotCapture {
+  competitor_id: string;
+  source_type: ScraperConfig['sourceType'];
+  source_name: string;
+  source_url: string;
+  content_hash: string;
+  normalized_data: {
+    pageTitle: string;
+    description: string;
+    headings: string[];
+    priceSignals: string[];
+    courseSignals: string[];
+  };
+}
+
 // Competitor scraper configurations
 export const competitorConfigs: ScraperConfig[] = [
-  ['hujiang', '沪江网校', 'https://www.hujiang.com/'],
-  ['izaodao', '早道网校', 'https://njp.izaodao.com/'],
-  ['koolearn-languages', '新东方在线小语种', 'https://language.koolearn.com/'],
-  ['olacio', '欧那在线课程', 'https://www.olacio.com/'],
-  ['yangtuo', '羊驼教育课程', 'https://www.yangtuoedu.com/index'],
-  ['hellotalk', 'HelloTalk', 'https://www.hellotalk.com/blog/'],
-  ['youda', '友达日语在线课程', 'https://www.youda.com.cn/'],
-  ['ribencun', '日本村外教网', 'https://www.ribencun.com/'],
-  ['weimingtian', '未名天日语课程', 'https://www.riyu365.com/index.html'],
-  ['zhizhu', '知诸日语课程', 'https://www.zhizhuxueyuan.com/'],
-].map(([id, productName, url]) => ({
+  ['hujiang', '沪江网校', 'https://www.hujiang.com/', 'product_page'],
+  ['izaodao', '早道网校', 'https://njp.izaodao.com/', 'course_catalog'],
+  ['koolearn-languages', '新东方在线小语种', 'https://language.koolearn.com/', 'course_catalog'],
+  ['olacio', '欧那在线课程', 'https://www.olacio.com/', 'course_catalog'],
+  ['yangtuo', '羊驼教育课程', 'https://www.yangtuoedu.com/index', 'course_catalog'],
+  ['hellotalk', 'HelloTalk', 'https://www.hellotalk.com/blog/', 'official_news'],
+  ['youda', '友达日语在线课程', 'https://www.youda.com.cn/', 'course_catalog'],
+  ['ribencun', '日本村外教网', 'https://www.ribencun.com/', 'course_catalog'],
+  ['weimingtian', '未名天日语课程', 'https://www.riyu365.com/index.html', 'course_catalog'],
+  ['zhizhu', '知诸日语课程', 'https://www.zhizhuxueyuan.com/', 'course_catalog'],
+].map(([id, productName, url, sourceType]) => ({
   id,
   productName,
   url,
+  sourceType: sourceType as ScraperConfig['sourceType'],
   selectors: {
     list: 'article',
     title: 'h2, h3',
@@ -54,7 +72,10 @@ export const competitorConfigs: ScraperConfig[] = [
   },
 }));
 
-export async function scrapeCompetitor(config: ScraperConfig): Promise<CompetitorUpdate[]> {
+export async function scrapeCompetitor(config: ScraperConfig): Promise<{
+  updates: CompetitorUpdate[];
+  snapshot: SourceSnapshotCapture;
+}> {
   const updates: CompetitorUpdate[] = [];
 
   try {
@@ -80,6 +101,20 @@ export async function scrapeCompetitor(config: ScraperConfig): Promise<Competito
 
     const html = await response.text();
     const $ = cheerio.load(html);
+    $('script, style, noscript, svg').remove();
+    const clean = (value: string) => value.replace(/\s+/g, ' ').trim();
+    const pageTitle = clean($('title').first().text()).slice(0, 180);
+    const description = clean($('meta[name="description"]').attr('content') || '').slice(0, 500);
+    const headings = $('h1, h2, h3')
+      .map((_, element) => clean($(element).text()))
+      .get().filter((value) => value.length >= 3).slice(0, 40);
+    const pageText = clean($('body').text());
+    const priceSignals = [...new Set(pageText.match(/(?:¥|￥)\s?\d+(?:\.\d{1,2})?|(?:\d+(?:\.\d{1,2})?)\s?元/g) || [])].slice(0, 20);
+    const courseSignals = headings.filter((value) =>
+      /课程|班|日语|韩语|法语|德语|西班牙语|留学|JLPT|TOPIK|DELE|TestDaF/i.test(value)
+    ).slice(0, 24);
+    const normalizedData = { pageTitle, description, headings, priceSignals, courseSignals };
+    const contentHash = createHash('sha256').update(JSON.stringify(normalizedData)).digest('hex');
 
     const items = $(config.selectors.list).slice(0, 5);
 
@@ -122,10 +157,19 @@ export async function scrapeCompetitor(config: ScraperConfig): Promise<Competito
         published_at: date,
       });
     });
+    return {
+      updates,
+      snapshot: {
+        competitor_id: config.id,
+        source_type: config.sourceType,
+        source_name: `${config.productName} · 官方网站`,
+        source_url: config.url,
+        content_hash: contentHash,
+        normalized_data: normalizedData,
+      },
+    };
   } catch (error) {
     console.error(`Error scraping ${config.url}:`, error);
     throw error;
   }
-
-  return updates;
 }

@@ -17,7 +17,7 @@ export async function GET(
       FROM articles a LEFT JOIN content_enrichments ce ON ce.id = (
         SELECT id FROM content_enrichments WHERE entity_type='article' AND entity_id=a.id AND status='published'
         ORDER BY generated_at DESC LIMIT 1
-      ) WHERE a.id = ?`).get(id) as Record<string, unknown> | undefined;
+      ) WHERE a.id = ? AND COALESCE(a.language, '') != 'chinese'`).get(id) as Record<string, unknown> | undefined;
     const article = rawArticle ? attachEditorial(rawArticle) : null;
     if (!article) {
       return NextResponse.json({ error: 'Article not found' }, { status: 404 });
@@ -27,7 +27,8 @@ export async function GET(
     const related = db.prepare(
       `SELECT id, title, summary, language, tags, published_at, source_name 
        FROM articles 
-       WHERE id != ? AND (language = (SELECT language FROM articles WHERE id = ?) OR tags LIKE ?)
+       WHERE id != ? AND COALESCE(language, '') != 'chinese'
+         AND (language = (SELECT language FROM articles WHERE id = ?) OR tags LIKE ?)
        ORDER BY published_at DESC LIMIT 5`
     ).all(id, id, '%' + String((article as { tags?: string }).tags || '').split('"')[1] + '%');
 

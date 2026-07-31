@@ -12,21 +12,16 @@ export async function GET(request: NextRequest) {
     const language = searchParams.get('language');
     const tag = searchParams.get('tag');
     const sort = searchParams.get('sort') || 'date'; // date | score
-    const chineseOnly = searchParams.get('chinese') === 'true';
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
     const offset = (page - 1) * limit;
 
-    const whereClauses: string[] = [];
+    const whereClauses: string[] = ["COALESCE(language, '') != 'chinese'"];
     const params: (string | number)[] = [];
 
     if (language && language !== 'all') {
       whereClauses.push('language = ?');
       params.push(language);
-    } else if (chineseOnly) {
-      // 仅在未选择具体语种时应用中文筛选
-      whereClauses.push('language = ?');
-      params.push('chinese');
     }
 
     if (tag) {

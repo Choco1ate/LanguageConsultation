@@ -143,47 +143,6 @@
         "date": ""
       },
       "linkFilter": "/new/p"
-    },
-    {
-      "name": "中国教育考试网",
-      "url": "https://www.neea.edu.cn/html1/category/16093/615-1.htm",
-      "language": "chinese",
-      "tags": ["高考"],
-      "titleIncludes": "高考",
-      "selector": {
-        "list": "#JKDivs_0 > ul:not(.page) > li",
-        "title": "#ReportIDkicker a@title",
-        "link": "#ReportIDkicker a@href",
-        "date": "#ReportIDIssueTime"
-      }
-    },
-    {
-      "name": "网易留学",
-      "url": "https://edu.163.com/liuxue/",
-      "language": "chinese",
-      "tags": ["留学", "行业资讯"],
-      "isChinese": true,
-      "selector": {
-        "list": "a",
-        "title": "",
-        "link": "@href",
-        "date": ""
-      },
-      "linkFilter": "/dy/article/"
-    },
-    {
-      "name": "新东方留学",
-      "url": "https://liuxue.xdf.cn/news/",
-      "language": "chinese",
-      "tags": ["留学", "行业资讯"],
-      "isChinese": true,
-      "selector": {
-        "list": "a",
-        "title": "",
-        "link": "@href",
-        "date": ""
-      },
-      "linkFilter": "/news/"
     }
   ]
 }

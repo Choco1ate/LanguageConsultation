@@ -54,8 +54,9 @@ export const LANGUAGE_MAP: Record<string, string> = {
   multi: '多语种',
 };
 
-// 语种筛选按钮选项（含中文，统一为语种选择）
+// 小语种站不展示中文学习内容；中文仅作为界面语言使用。
 export const LANGUAGE_OPTIONS = Object.entries(LANGUAGE_MAP)
+  .filter(([value]) => value !== 'chinese')
   .map(([value, label]) => ({ value, label }));
 
 export const TAG_OPTIONS = [

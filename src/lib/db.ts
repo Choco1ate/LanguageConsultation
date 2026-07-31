@@ -152,6 +152,37 @@ export function initDb() {
       finished_at DATETIME NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS source_snapshots (
+      id TEXT PRIMARY KEY,
+      competitor_id TEXT NOT NULL,
+      source_type TEXT NOT NULL,
+      source_name TEXT NOT NULL,
+      source_url TEXT NOT NULL,
+      content_hash TEXT NOT NULL,
+      normalized_data TEXT NOT NULL DEFAULT '{}',
+      status TEXT NOT NULL DEFAULT 'success',
+      captured_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (competitor_id) REFERENCES competitors(id),
+      UNIQUE (competitor_id, source_url, content_hash)
+    );
+
+    CREATE TABLE IF NOT EXISTS trend_digests (
+      id TEXT PRIMARY KEY,
+      digest_date DATE NOT NULL,
+      range_key TEXT NOT NULL CHECK(range_key IN ('7d', '30d')),
+      language TEXT NOT NULL DEFAULT 'all',
+      headline TEXT NOT NULL,
+      summary TEXT NOT NULL,
+      findings TEXT NOT NULL DEFAULT '[]',
+      signals TEXT NOT NULL DEFAULT '[]',
+      evidence_ids TEXT NOT NULL DEFAULT '[]',
+      generation_method TEXT NOT NULL DEFAULT 'rules',
+      model TEXT,
+      status TEXT NOT NULL DEFAULT 'published',
+      generated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE (digest_date, range_key, language)
+    );
+
     CREATE TABLE IF NOT EXISTS content_enrichments (
       id TEXT PRIMARY KEY,
       entity_type TEXT NOT NULL CHECK(entity_type IN ('article', 'competitor_update')),
@@ -193,6 +224,11 @@ export function initDb() {
       watch_points TEXT NOT NULL DEFAULT '[]',
       source_ids TEXT NOT NULL DEFAULT '[]',
       model TEXT NOT NULL,
+      generation_method TEXT NOT NULL DEFAULT 'ai',
+      evidence_count INTEGER DEFAULT 0,
+      source_count INTEGER DEFAULT 0,
+      platform_count INTEGER DEFAULT 0,
+      metrics TEXT NOT NULL DEFAULT '{}',
       status TEXT NOT NULL DEFAULT 'published',
       published_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
@@ -213,6 +249,10 @@ export function initDb() {
       ON exam_events(exam_date);
     CREATE INDEX IF NOT EXISTS idx_scraper_runs_source
       ON scraper_runs(source_type, source_name, finished_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_source_snapshots_competitor
+      ON source_snapshots(competitor_id, source_type, captured_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_trend_digests_lookup
+      ON trend_digests(range_key, language, digest_date DESC);
     CREATE INDEX IF NOT EXISTS idx_content_enrichments_entity
       ON content_enrichments(entity_type, entity_id, status, generated_at DESC);
     CREATE INDEX IF NOT EXISTS idx_content_enrichments_category
@@ -252,6 +292,24 @@ export function initDb() {
   } catch { /* 已存在 */ }
   try {
     database.exec(`ALTER TABLE competitor_updates ADD COLUMN product_id TEXT`);
+  } catch { /* 已存在 */ }
+  try {
+    database.exec(`ALTER TABLE competitor_updates ADD COLUMN source_snapshot_id TEXT`);
+  } catch { /* 已存在 */ }
+  try {
+    database.exec(`ALTER TABLE weekly_reports ADD COLUMN generation_method TEXT NOT NULL DEFAULT 'ai'`);
+  } catch { /* 已存在 */ }
+  try {
+    database.exec(`ALTER TABLE weekly_reports ADD COLUMN evidence_count INTEGER DEFAULT 0`);
+  } catch { /* 已存在 */ }
+  try {
+    database.exec(`ALTER TABLE weekly_reports ADD COLUMN source_count INTEGER DEFAULT 0`);
+  } catch { /* 已存在 */ }
+  try {
+    database.exec(`ALTER TABLE weekly_reports ADD COLUMN platform_count INTEGER DEFAULT 0`);
+  } catch { /* 已存在 */ }
+  try {
+    database.exec(`ALTER TABLE weekly_reports ADD COLUMN metrics TEXT NOT NULL DEFAULT '{}'`);
   } catch { /* 已存在 */ }
   try {
     database.exec(`ALTER TABLE competitor_products ADD COLUMN store_description TEXT`);
